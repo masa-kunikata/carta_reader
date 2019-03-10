@@ -29,39 +29,36 @@ $(function(){
   }
   loadData();
   
-  
   function getRandomInt(max) {
     return Math.floor(Math.random() * Math.floor(max));
   }
   
-  var done = [];
   function nextTarget() {
-    if (done.length == data.length) {
+    if (data.length < 1) {
       return null;
     }
-    for(;;) {
-      var target = getRandomInt(data.length);
-      
-      if (0 <= done.indexOf(target) ){
-        // exist
-        continue;
-      }
-      done.push(target);
-      
-      return target;      
-    }
+    return getRandomInt(data.length);
   }
 
-  $(document).on('click', function(){
+  $(document).on('click keydown tap', function(){
     var index = nextTarget();
     
     if (index == null) {
       $('#disp').text('終わり');
+      $('#reload').css({display: 'inline'})
       return;
     }
-  
     $('#disp').text(data[index]);
+    
+    data.splice(index, 1);
   });
+  
+  $('#disp').text('クリック / なんかキー押す');
+  
+  $('#reload').on('click', function(){
+    location.reload();
+  });
+  
 });
 </script>
 <style>
@@ -73,6 +70,7 @@ $(function(){
 </style>
 </head>
 <body>
+<button style="display:none;" id="reload">もう一回</button>
 <h1 id="disp"></h1>
 </body>
 </html>
