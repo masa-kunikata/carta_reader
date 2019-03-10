@@ -1,0 +1,72 @@
+<html>
+
+
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
+
+$(function(){
+  var data = [
+    'カイロ',
+    'ベルリン',
+    'ロンドン',
+    '北京（ぺきん）',
+    'バンコク',
+    'パリ',
+    'モスクワ',
+    'ニューデリー',
+    '東京',
+    'オタワ',
+    'ブラジリア',
+    'キャンベラ',
+    'ジャカルタ',
+    'ローマ',
+    'ソウル',
+    'ワシントンD.C.',
+  ];
+  
+  function getRandomInt(max) {
+    return Math.floor(Math.random() * Math.floor(max));
+  }
+  
+  var done = [];
+  function nextTarget() {
+    if (done.length == data.length) {
+      return null;
+    }
+    for(;;) {
+      var target = getRandomInt(data.length);
+      
+      if (0 <= done.indexOf(target) ){
+        // exist
+        continue;
+      }
+      done.push(target);
+      
+      return target;      
+    }
+  }
+
+  $(document).on('click', function(){
+    var index = nextTarget();
+    
+    if (index == null) {
+      alert('終わり')
+      return;
+    }
+  
+    $('#disp').text(data[index]);
+  });
+});
+
+
+</script>
+</head>
+
+<body>
+
+<h1 style='padding: 50px 0px; font-size: 150px; text-align: center;' id="disp"></h1>
+
+</body>
+
+</html>
