@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/roudokuka/docs/roudokuka.min.js"></script>
 <script>
 $(function(){
   
@@ -48,8 +49,15 @@ $(function(){
       $('#reload').css({display: 'inline'})
       return;
     }
-    $('#disp').text(data[index]);
+    var text = data[index];
+    $('#disp').text(text);
     
+    try {
+      var r = new Roudokuka([text]);
+      r.start();
+    } catch(e) {
+      console.log(e);
+    }
     data.splice(index, 1);
   });
   
