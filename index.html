@@ -3,12 +3,49 @@
 <head>
 <meta charset="utf-8"/>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/roudokuka/docs/roudokuka.min.js"></script>
 <script>
 $(function(){
-  
-  var data = [];
-  function loadData() {
+  // init
+  function init(data) {
+    function getRandomInt(max) {
+      return Math.floor(Math.random() * Math.floor(max));
+    }
+    
+    function nextTarget() {
+      if (data.length < 1) {
+        return null;
+      }
+      return getRandomInt(data.length);
+    }
+
+    $(document).on('click keydown tap', function(){
+      var index = nextTarget();
+      
+      if (index == null) {
+        $('#disp').text('終わり');
+        $('#reload').css({display: 'inline'})
+        return;
+      }
+      var text = data[index];
+      $('#disp').text(text);
+      
+      try {
+        speechSynthesis.speak(new SpeechSynthesisUtterance(text))
+      } catch(e) {
+        console.log(e);
+      }
+      data.splice(index, 1);
+    });
+    
+    $('#disp').text('クリック / なんかキー押す');
+    
+    $('#reload').on('click', function(){
+      location.reload();
+    });
+  }
+
+  // load
+  (function () {
     var s = location.search;
     
     var dataType = 'cities'
@@ -22,51 +59,12 @@ $(function(){
     
     $.getJSON(jsonUrl)
       .done(function(resp,textStatus,jqXHR ) {
-        data = resp;
+        init(resp)
       })
       .fail(function(jqXHR, textStatus, errorThrown ) {
         console.log(errorThrown);
       });
-  }
-  loadData();
-  
-  function getRandomInt(max) {
-    return Math.floor(Math.random() * Math.floor(max));
-  }
-  
-  function nextTarget() {
-    if (data.length < 1) {
-      return null;
-    }
-    return getRandomInt(data.length);
-  }
-
-  $(document).on('click keydown tap', function(){
-    var index = nextTarget();
-    
-    if (index == null) {
-      $('#disp').text('終わり');
-      $('#reload').css({display: 'inline'})
-      return;
-    }
-    var text = data[index];
-    $('#disp').text(text);
-    
-    try {
-      var r = new Roudokuka([text]);
-      r.start();
-    } catch(e) {
-      console.log(e);
-    }
-    data.splice(index, 1);
-  });
-  
-  $('#disp').text('クリック / なんかキー押す');
-  
-  $('#reload').on('click', function(){
-    location.reload();
-  });
-  
+  })();
 });
 </script>
 <style>
