@@ -10,5 +10,8 @@ https://masa-kunikata.github.io/carta_reader/?data=cities
 Countries (ANA trump)
 https://masa-kunikata.github.io/carta_reader/?data=countries
 
+HyakuninIsshu
+https://masa-kunikata.github.io/carta_reader/?data=hyakuninisshu
+
 Chizukigo
 https://masa-kunikata.github.io/carta_reader/?data=chizukigo

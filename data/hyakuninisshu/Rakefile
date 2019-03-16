@@ -1,0 +1,41 @@
+require 'json'
+
+
+task default: :text_to_json 
+
+
+DATA_FILE = 'hyakuninisshu_data.txt'
+
+OUT_JSON = '../hyakuninisshu.json'
+
+#property	上の句	上の句カナ	下の句	下の句カナ	作者
+LINE_REGEX = /
+  (?<no>[0-9]+?)\t
+  (?<kami>.+?)\t
+  (?<kamikana>.+?)\t
+  (?<shimo>.+?)\t
+  (?<shimokana>.+?)\t
+  (?<author>.+?)\Z
+/x
+
+desc "data text to json"
+task :text_to_json do
+  
+  content = File.read(DATA_FILE, encoding: Encoding::UTF_8)
+
+  json_data = []
+  
+  content.each_line do |line|
+  
+    next if line =~ /^#/ # comment line
+    
+    m = LINE_REGEX.match(line)
+    
+    
+    json_data << "#{m['kamikana']}\t\t\t#{m['shimokana']}"
+  end
+  
+  
+  File.write(OUT_JSON, json_data.to_json, encoding: Encoding::UTF_8)
+  
+end
