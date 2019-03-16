@@ -6,7 +6,7 @@
 <script>
 $(function(){
   // init
-  function init(data) {
+  function init(data, sec) {
     function getRandomInt(max) {
       return Math.floor(Math.random() * Math.floor(max));
     }
@@ -18,7 +18,7 @@ $(function(){
       return getRandomInt(data.length);
     }
 
-    $(document).on('click keydown tap', function(){
+    function toNext(){
       var index = nextTarget();
       
       if (index == null) {
@@ -35,31 +35,50 @@ $(function(){
         console.log(e);
       }
       data.splice(index, 1);
-    });
+    }
     
-    $('#disp').text('クリック / なんかキー押す');
+    if (sec < 0) {
+      $(document).on('click keydown tap', toNext);
+      $('#disp').text('クリック / なんかキー押す');
+      
+    } else {
+      setInterval(
+        toNext,
+        1000 * sec
+      );
+    }
     
     $('#reload').on('click', function(){
       location.reload();
     });
   }
 
+  // param
+  function paramOf(s, key) {
+    if (!s) return null;
+    if (s === '') return null;
+    var regex = new RegExp(key + "=([^&]+)");
+    
+    var m = s.match(regex)
+    if (m) {
+      return m[1];
+    }
+    return null;
+  }
+  
   // load
   (function () {
     var s = location.search;
     
-    var dataType = 'cities'
-    if (s != '') {
-      var m = s.match(/\?data=(.+)/)
-      if (m) {
-        dataType = m[1];
-      }
-    }
+    var sec = parseInt((paramOf(s, 'sec') || '-1'), 10);
+
+    var dataType = (paramOf(s, 'data') || 'cities');
+    
     var jsonUrl = "https://raw.githubusercontent.com/masa-kunikata/carta_reader/master/data/" + dataType + ".json"
     
     $.getJSON(jsonUrl)
-      .done(function(resp,textStatus,jqXHR ) {
-        init(resp)
+      .done(function(data, textStatus, jqXHR ) {
+        init(data, sec)
       })
       .fail(function(jqXHR, textStatus, errorThrown ) {
         console.log(errorThrown);
