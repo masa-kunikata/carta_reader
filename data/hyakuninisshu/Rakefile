@@ -32,7 +32,7 @@ task :text_to_json do
     m = LINE_REGEX.match(line)
     
     
-    json_data << "#{m['kamikana']}\t\t\t#{m['shimokana']}"
+    json_data << "#{m['kamikana']}　　　#{m['shimokana']}"
   end
   
   
