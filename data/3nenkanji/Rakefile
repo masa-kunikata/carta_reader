@@ -139,9 +139,13 @@ task :jukugo_list do
   hit_jukugo = []
   
   subtract_kanjis.each do |k|
+    puts
+    puts "(#{k})"
     next if hit_kanjis.include?(k)
     
     subtract_kanjis.each do |j|
+      $stdout.write " (#{j})"
+      next if hit_kanjis.include?(k)
       next if hit_kanjis.include?(j)
       next if k == j
       
@@ -154,7 +158,7 @@ task :jukugo_list do
         hit_kanjis << j
         next
       end
-      sleep 2
+      sleep 3
       jukugo = "#{j}#{k}"
       if 0 < hit_count_of[jukugo]
         puts jukugo
@@ -163,7 +167,7 @@ task :jukugo_list do
         hit_kanjis << j
         next
       end
-      sleep 2
+      sleep 3
     end
   end
   
