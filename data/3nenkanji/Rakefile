@@ -1,0 +1,147 @@
+require 'json'
+
+require 'rest-client'
+require 'cgi'
+require 'json'
+require 'yaml'
+require 'erb'
+require 'oga'
+
+class ApiClient
+  def initialize(url)
+    @url = url
+  end
+  
+  def get(params)
+    res = RestClient.get(@url, params: params)
+    return nil if res.code != 200
+    res.body
+  end
+end
+
+SECRET_KEYS = YAML.load_file('secret_keys.yml')
+
+A3RT_TEXT_SUGGEST_URL = "https://api.a3rt.recruit-tech.co.jp/text_suggest/v2/predict?apikey=#{SECRET_KEYS['a3rt_text_suggest']}".freeze
+
+class DejizoClient
+  DEJIZO_URL = "http://public.dejizo.jp/NetDicV09.asmx/SearchDicItemLite"
+
+  DEJIZO_FIX_PARAMS = {
+    'Dic': 'wpedia',
+    'Scope': 'HEADWORD',
+    'Match': 'EXACT',
+    'Merge': 'AND',
+    'Prof': 'XHTML',
+    'PageSize': '1',
+    'PageIndex': '0',
+  }
+  def initialize
+    @cli = ApiClient.new(DEJIZO_URL)
+  end
+  
+  def get(word)
+    @cli.get(DEJIZO_FIX_PARAMS.merge({'word': word}))
+  end
+end
+
+
+
+#-----------
+
+task default: :check_data 
+
+
+KANJIS = %w<
+  丁 世 両 主 乗 予 事 仕 他 代 全 住 使 係 倍 具 写 列 助 勉
+  動 勝 化 区 医 去 反 取 受 号 向 君 味 命 和 品 員 商 問 坂
+  央 委 始 安 守 実 定 客 宮 宿 寒 対 局 屋 岸 島 州 帳 平 幸
+  度 庫 庭 式 役 待 苦 荷 葉 落 薬 返 送 追 速 進 運 遊 都 部
+  院 階 陽 急 息 悪 悲 意 感 想 所 打 投 指 持 拾 放 整 旅 族
+  昔 昭 暑 暗 曲 有 服 期 板 柱 根 植 業 様 横 橋 次 死 永 決
+  泳 注 波 油 洋 消 流 深 温 湖 港 湯 漢 炭 物 球 申 由 界 畑
+  病 発 登 皮 皿 県 相 真 短 研 礼 神 祭 福 秒 究 章 童 第 笛
+  等 筆 箱 級 終 緑 練 羊 美 着 習 者 育 血 表 詩 談 調 豆 負
+  起 路 身 転 軽 農 酒 配 重 鉄 銀 開 集 面 題 飲 館 駅 歯 鼻
+>
+
+
+TOCHU_YAML = '3nenkanji.yml'
+
+
+
+desc "data text to json"
+task :check_data do
+  tochu = YAML.load_file(TOCHU_YAML)
+  
+  all_chars = tochu.map{|s| s.each_char.to_a}.flatten
+  
+  subtract_kanjis = KANJIS - all_chars
+  
+  content = CHECK_DATA_ERB_TEMPLATE.result(binding)
+  
+  File.write(TOCHU_YAML, content, encoding: Encoding::UTF_8)
+end
+
+
+CHECK_DATA_ERB_TEMPLATE = ERB.new(<<-EOS)
+---
+<%
+  KANJIS.each_slice(20).each do |kanjis| %># <%
+    kanjis.each do |k|
+      if subtract_kanjis.include?(k) then
+%><%= k %> <%
+      else
+%>　 <%
+      end
+    end %>
+<%
+  end
+%>
+<% tochu.each do |t| 
+%>- <%= t %>
+<%
+  end
+%>
+EOS
+
+OUT_SENTENCE = 'bun.yml'
+
+task :sentence do
+  api_client = ApiClient.new(A3RT_TEXT_SUGGEST_URL)
+
+  resp = JSON.parse(api_client.get('漢字'))
+
+  File.open(OUT_SENTENCE, 'w') do |f|
+    puts resp['suggestion']
+    f.puts resp
+  end
+
+  # File.write(OUT_JSON, json_data.to_json, encoding: Encoding::UTF_8)
+end
+
+
+
+OUT_JUKUGO = 'jukugo.yml'
+
+task :jukugo_list do
+
+  dejizo_cli = DejizoClient.new
+  
+  hit_count_of = ->(word)do
+    xml = dejizo_cli.get(word)
+    doc = Oga.parse_xml(xml)
+    doc.xpath("//SearchDicItemResult/TotalHitCount").text.to_i
+  end
+  
+  puts hit_count_of['画次']
+  sleep 2
+  puts hit_count_of['友第']
+  sleep 2
+  puts hit_count_of['太陽']
+  sleep 2
+  puts hit_count_of['攻撃']
+  sleep 2
+  
+end
+
+OUT_JSON = '../3nenkanji.json'
