@@ -124,54 +124,55 @@ end
 OUT_JUKUGO = 'jukugo.yml'
 
 task :jukugo_list do
-  tochu_list = YAML.load_file(TOCHU_YAML)
-  
-  subtract_kanjis = subtract_kanjis_from(tochu_list)
-
-  dejizo_cli = DejizoClient.new
-  hit_count_of = ->(word)do
-    xml = dejizo_cli.get(word)
-    doc = Oga.parse_xml(xml)
-    doc.xpath("//SearchDicItemResult/TotalHitCount").text.to_i
-  end
-  
-  hit_kanjis = []
-  hit_jukugo = []
-  
-  subtract_kanjis.each do |k|
-    puts
-    puts "(#{k})"
-    next if hit_kanjis.include?(k)
+  begin
+    tochu_list = YAML.load_file(TOCHU_YAML)
     
-    subtract_kanjis.each do |j|
-      $stdout.write " (#{j})"
-      next if hit_kanjis.include?(k)
-      next if hit_kanjis.include?(j)
-      next if k == j
-      
-      jukugo = "#{k}#{j}"
-      
-      if 0 < hit_count_of[jukugo]
-        puts jukugo
-        hit_jukugo << jukugo
-        hit_kanjis << k
-        hit_kanjis << j
-        next
-      end
+    subtract_kanjis = subtract_kanjis_from(tochu_list)
+
+    dejizo_cli = DejizoClient.new
+    hit_count_of = ->(word)do
+      xml = dejizo_cli.get(word)
       sleep 3
-      jukugo = "#{j}#{k}"
-      if 0 < hit_count_of[jukugo]
-        puts jukugo
-        hit_jukugo << jukugo
-        hit_kanjis << k
-        hit_kanjis << j
-        next
-      end
-      sleep 3
+      doc = Oga.parse_xml(xml)
+      doc.xpath("//SearchDicItemResult/TotalHitCount").text.to_i
     end
+    
+    hit_kanjis = []
+    hit_jukugo = []
+    no_hit_pairs = []
+    
+    subtract_kanjis.each do |k|
+      puts
+      puts "(#{k})"
+      next if hit_kanjis.include?(k)
+      
+      subtract_kanjis.each do |j|
+        $stdout.write " (#{j})"
+        next if hit_kanjis.include?(k)
+        next if hit_kanjis.include?(j)
+        next if no_hit_pairs.include?([k, j].sort)
+        next if k == j
+        
+        hit = nil
+        ["#{k}#{j}", "#{j}#{k}"].each do |jukugo|
+          if 0 < hit_count_of[jukugo]
+            hit = true
+            puts jukugo
+            hit_jukugo << jukugo
+            hit_kanjis << k
+            hit_kanjis << j
+            break
+          end
+        end
+        next if hit
+        
+        # no hit!
+        no_hit_pairs << [k, j].sort
+      end
+    end
+  ensure
+    File.write(OUT_JUKUGO, hit_jukugo.to_json, encoding: Encoding::UTF_8) rescue nil
   end
-  
-  File.write(OUT_JUKUGO, hit_jukugo.to_json, encoding: Encoding::UTF_8)
 end
 
 OUT_JSON = '../3nenkanji.json'
