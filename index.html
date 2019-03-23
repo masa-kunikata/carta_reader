@@ -26,11 +26,27 @@ $(function(){
         $('#reload').css({display: 'inline'})
         return;
       }
-      var text = data[index];
-      $('#disp').text(text);
+      var item = data[index];
+      
+      if (typeof(item) == "string") {
+        item = {
+          text: item,
+          html: null,
+          read: item,
+        }
+      }
+      if (!(item.read)) {
+        item.read = item.text;
+      }
+      
+      if (item.html) {
+        $('#disp').html(item.html);
+      } else {
+        $('#disp').text(item.text);
+      }
       
       try {
-        speechSynthesis.speak(new SpeechSynthesisUtterance(text))
+        speechSynthesis.speak(new SpeechSynthesisUtterance(item.read))
       } catch(e) {
         console.log(e);
       }
