@@ -12,5 +12,6 @@ Carta game "reader" for Niko
 |HyakuninIsshu | [20 sec](https://masa-kunikata.github.io/carta_reader/?data=hyakuninisshu&sec=20) | [click](https://masa-kunikata.github.io/carta_reader/?data=hyakuninisshu) |
 |Niko Carta | [7 sec](https://masa-kunikata.github.io/carta_reader/?data=nikocarta&sec=7) | [click](https://masa-kunikata.github.io/carta_reader/?data=nikocarta) |
 |Chizukigo | [7 sec](https://masa-kunikata.github.io/carta_reader/?data=chizukigo&sec=7) | [click](https://masa-kunikata.github.io/carta_reader/?data=chizukigo) |
+|3nen Kanji | [7 sec](https://masa-kunikata.github.io/carta_reader/?data=3nenkanji&sec=7) | [click](https://masa-kunikata.github.io/carta_reader/?data=3nenkanji) |
 
 

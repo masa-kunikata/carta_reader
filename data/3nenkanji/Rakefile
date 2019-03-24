@@ -72,7 +72,7 @@ def subtract_kanjis_from(tochu_list)
   KANJIS - all_chars
 end
 
-desc "data text to json"
+desc "check data"
 task :check_data do
   tochu_list = YAML.load_file(TOCHU_YAML)
   
@@ -176,3 +176,21 @@ task :jukugo_list do
 end
 
 OUT_JSON = '../3nenkanji.json'
+desc "data text to json"
+task :data_text_to_json do
+  list = YAML.load_file(TOCHU_YAML)
+  recs = KANJIS.zip(list)
+  
+  File.write(OUT_JSON, JSON_TEMPLATE.result(binding), encoding: Encoding::UTF_8)
+  
+end
+
+JSON_TEMPLATE = ERB.new(<<-EOS)
+<%
+  recs.each.with_index do |(kanji, bun), i|
+    html = bun.sub(kanji, "<span class='kyocho'>" + kanji + "</span>")
+  %><%= (i == 0 ? '[' : ',') %>{"read": "<%= bun %>", "html": "<%= html %>"}
+<%
+  end
+%>]
+EOS
