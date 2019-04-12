@@ -44,18 +44,7 @@
         //
         methods: {
           //
-          getRandomInt (max)  {
-            return Math.floor(Math.random() * Math.floor(max));
-          },
-          //
-          nextTarget (num) {
-            if (num < 1) {
-              return null;
-            }
-            return this.getRandomInt(num);
-          },
-          //
-          paramOf (s, key) {
+          paramOf: (s, key) => {
             if (!s) return null;
             if (s === '') return null;
             var regex = new RegExp(key + "=([^&]+)");
@@ -67,9 +56,18 @@
             return null;
           },
           //
+          getRandomInt: (max) => {
+            return Math.floor(Math.random() * Math.floor(max));
+          },
+          //
+          nextTarget (num) {
+            if (num < 1) {
+              return null;
+            }
+            return this.getRandomInt(num);
+          },
+          //
           nextCard(event) {
-            console.log('asdf_asdf');
-            
             const index = this.nextTarget(this.cards.length);
             
             if (index == null) {
