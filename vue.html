@@ -81,9 +81,9 @@
             const s = location.search
             if (!s) return null
             if (s === '') return null
-            var regex = new RegExp(key + "=([^&]+)")
+            const regex = new RegExp(key + "=([^&]+)")
             
-            var m = s.match(regex)
+            const m = s.match(regex)
             if (m) {
               return m[1]
             }
@@ -108,7 +108,7 @@
               this.currentContent = '終わり'
               return
             }
-            var item = this.cards[index]
+            let item = this.cards[index]
             
             if (typeof(item) == "string") {
               item = {
@@ -121,11 +121,7 @@
               item.read = item.text
             }
             
-            if (item.html) {
-              this.currentContent = item.html
-            } else {
-              this.currentContent = item.text
-            }
+            this.currentContent = (item.html || item.text)
             
             try {
               speechSynthesis.speak(new SpeechSynthesisUtterance(item.read))
