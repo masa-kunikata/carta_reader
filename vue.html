@@ -8,9 +8,6 @@
         font-size: 150px;
         text-align: center;
       }
-      button.reload {
-        font-size: 150px;
-      }
       .kyocho {
         color: red;
       }
@@ -22,7 +19,8 @@
   <body>
     <div id="app" v-cloak>
       <h1 v-html="currentContent"></h1>
-      <button class="reload" v-if="done" @click="reloadPage">もう一回</button>
+      <a v-if="done" @click.prevent="reloadPage" class="reload">もう一回</a>
+      <span v-if="autoMode" v-once>{{ sec }}秒</span>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/vue"></script>
