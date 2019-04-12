@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+  <meta charset="UTF-8">
   <head>
     <style>
       #app {
@@ -27,54 +28,87 @@
     <script src="https://cdn.jsdelivr.net/npm/vue"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
-      //-------------
+      //
       new Vue({
         el: '#app',
         //
         data: {
           currentContent: '',
           cards: [],
+          sec: -1,
         },
         //
         computed: {
-          done() {
-            return (this.cards.length < 1);
+          done () {
+            return (this.cards.length < 1)
           },
+          autoMode () {
+            return (0 < this.sec)
+          }
+        },
+        //
+        created () {
+          const dataType = (this.paramOf('data') || 'cities')
+          
+          const jsonUrl = `https://raw.githubusercontent.com/masa-kunikata/carta_reader/master/data/${dataType}.json`
+          axios.get(jsonUrl)
+            .then((res) => {
+              this.cards = res.data
+            })
+
+          this.sec = parseInt((this.paramOf('sec') || '-1'), 10)
+        },
+        //
+        mounted () {
+          if (!this.autoMode) {
+            window.addEventListener('click', this.nextCard)
+            window.addEventListener('keydown', this.nextCard)
+          }
+
+          this.init()
+        },
+        //
+        beforeDestoy () {
+          if (!this.autoMode) {
+            window.removeEventListener('click', this.nextCard)
+            window.removeEventListener('keydown', this.nextCard)
+          }
         },
         //
         methods: {
           //
-          paramOf: (s, key) => {
-            if (!s) return null;
-            if (s === '') return null;
-            var regex = new RegExp(key + "=([^&]+)");
+          paramOf: (key) => {
+            const s = location.search
+            if (!s) return null
+            if (s === '') return null
+            var regex = new RegExp(key + "=([^&]+)")
             
             var m = s.match(regex)
             if (m) {
-              return m[1];
+              return m[1]
             }
-            return null;
+            return null
           },
           //
           getRandomInt: (max) => {
-            return Math.floor(Math.random() * Math.floor(max));
+            return Math.floor(Math.random() * Math.floor(max))
           },
           //
           nextTarget (num) {
             if (num < 1) {
-              return null;
+              return null
             }
-            return this.getRandomInt(num);
+            return this.getRandomInt(num)
           },
           //
-          nextCard(event) {
-            const index = this.nextTarget(this.cards.length);
+          nextCard (event) {
+            const index = this.nextTarget(this.cards.length)
             
             if (index == null) {
-              this.currentContent = '終わり';
-              return;
+              this.currentContent = '終わり'
+              return
             }
-            var item = this.cards[index];
+            var item = this.cards[index]
             
             if (typeof(item) == "string") {
               item = {
@@ -84,7 +118,7 @@
               }
             }
             if (!(item.read)) {
-              item.read = item.text;
+              item.read = item.text
             }
             
             if (item.html) {
@@ -96,40 +130,33 @@
             try {
               speechSynthesis.speak(new SpeechSynthesisUtterance(item.read))
             } catch(e) {
-              console.log(e);
+              console.log(e)
             }
-            this.cards.splice(index, 1);
+            this.cards.splice(index, 1)
           },
           //
-          reloadPage() {
-            location.reload();
+          init () {
+            if (!this.autoMode) {
+              this.currentContent = 'クリック / なんかキー押す'
+              return
+            }
+            
+            //first
+            setTimeout(
+              this.nextCard,
+              1000
+            )
+            setInterval(
+              this.nextCard,
+              1000 * this.sec
+            )
+          },
+          //
+          reloadPage () {
+            location.reload()
           },
         },
-        //
-        created () {
-          const s = location.search;
-          
-          const sec = parseInt((this.paramOf(s, 'sec') || '-1'), 10);
-
-          const dataType = (this.paramOf(s, 'data') || 'cities');
-          
-          const jsonUrl = "https://raw.githubusercontent.com/masa-kunikata/carta_reader/master/data/" + dataType + ".json"
-          axios.get(jsonUrl)
-            .then((res) => {
-              this.cards = res.data
-              // console.log(this.cards);
-            })
-            .then(() => {
-              window.addEventListener('click', this.nextCard);
-              window.addEventListener('keydown', this.nextCard);
-            })
-        },
-        //
-        beforeDestoy () {
-          window.removeEventListener('click', this.nextCard);
-          window.removeEventListener('keydown', this.nextCard);
-        },
-      });
+      })
     </script>
   </body>
 </html>
