@@ -3,9 +3,13 @@
   <meta charset="UTF-8">
   <head>
     <style>
-      #app {
-        padding: 50px 0px;
-        font-size: 150px;
+      #menu {
+        margin: 1px 0px;
+        font-size: 20px;
+      }
+      #content {
+        margin: 50px 0px;
+        font-size: 50px;
         text-align: center;
       }
       .kyocho {
@@ -17,10 +21,16 @@
     </style>
   </head>
   <body>
-    <div id="app" v-cloak>
-      <h1 v-html="currentContent"></h1>
-      <a v-if="done" @click.prevent="reloadPage" class="reload">もう一回</a>
-      <span v-if="autoMode" v-once>{{ sec }}秒</span>
+    <div id="app">
+      <div id="menu" v-cloak>
+        <input type="range" min="0" max="10" v-model="sec">
+        <span>{{sec}} 秒</span>
+        <button :disabled="!done" @click="reloadPage">もう一回</button>
+      <div>
+      <hr/>
+      <div v-cloak id="content" @click="nextCard" @keydown="nextCard">
+        <h1 v-html="currentContent"></h1>
+      </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/vue"></script>
@@ -45,6 +55,14 @@
           }
         },
         //
+        watch: {
+          autoMode (newVal, oldVal) {
+            if (oldVal === false && newVal === true) {
+              this.nextCard()
+            }
+          }
+        },
+        //
         created () {
           const dataType = (this.paramOf('data') || 'cities')
           
@@ -54,23 +72,11 @@
               this.cards = res.data
             })
 
-          this.sec = parseInt((this.paramOf('sec') || '-1'), 10)
+          this.sec = parseInt((this.paramOf('sec') || '0'), 10)
         },
         //
         mounted () {
-          if (!this.autoMode) {
-            window.addEventListener('click', this.nextCard)
-            window.addEventListener('keydown', this.nextCard)
-          }
-
           this.init()
-        },
-        //
-        beforeDestoy () {
-          if (!this.autoMode) {
-            window.removeEventListener('click', this.nextCard)
-            window.removeEventListener('keydown', this.nextCard)
-          }
         },
         //
         methods: {
@@ -99,25 +105,30 @@
             return this.getRandomInt(num)
           },
           //
-          nextCard (event) {
-            const index = this.nextTarget(this.cards.length)
+          itemOf: (rec) => {
+            let item = {}
             
-            if (index == null) {
-              this.currentContent = '終わり'
-              return
-            }
-            let item = this.cards[index]
-            
-            if (typeof(item) == "string") {
+            if (typeof(rec) == "string") {
               item = {
-                text: item,
+                text: rec,
                 html: null,
-                read: item,
+                read: rec,
               }
             }
             if (!(item.read)) {
               item.read = item.text
             }
+            return item
+          },
+          //
+          nextCard (event) {
+            const index = this.nextTarget(this.cards.length)
+            
+            if (index === null) {
+              this.currentContent = '終わり'
+              return
+            }
+            const item = this.itemOf(this.cards[index])
             
             this.currentContent = (item.html || item.text)
             
@@ -127,6 +138,13 @@
               console.log(e)
             }
             this.cards.splice(index, 1)
+            
+            if (this.autoMode) {
+              setTimeout(
+                this.nextCard,
+                1000 * this.sec
+              )
+            }
           },
           //
           init () {
@@ -134,15 +152,10 @@
               this.currentContent = 'クリック / なんかキー押す'
               return
             }
-            
-            //first
+            // first time
             setTimeout(
               this.nextCard,
               1000
-            )
-            setInterval(
-              this.nextCard,
-              1000 * this.sec
             )
           },
           //
