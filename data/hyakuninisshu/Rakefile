@@ -39,3 +39,57 @@ task :text_to_json do
   File.write(OUT_JSON, json_data.to_json, encoding: Encoding::UTF_8)
   
 end
+
+def category_out(prefixes, out_path)
+  content = File.read(DATA_FILE, encoding: Encoding::UTF_8)
+
+  json_data = []
+  
+  content.each_line do |line|
+  
+    next if line =~ /^#/ # comment line
+    
+    m = LINE_REGEX.match(line)
+    
+    next if prefixes.include?(m['kamikana'])
+    
+    json_data << {
+      text: "#{m['kami']}　　　#{m['shimo']}",
+      read: "#{m['kamikana']}、、、#{m['shimokana']}",
+    }
+  end
+  
+  File.write(out_path, json_data.to_json, encoding: Encoding::UTF_8)
+end
+
+
+
+BLUE_PREFIXES = [
+  "アシビキノ　ヤマドリノオノ　シダリオノ",
+  "アリアケノ　ツレナクミエシ　ワカレヨリ",
+  "アラシフク　ミムロノヤマノ　モミジバワ",
+  "オクヤマニ　モミジフミワケ　ナクシカノ",
+  "アサボラケ　アリアケノツキト　ミルマデニ",
+  "サビシサニ　ヤドオタチイデテ　ナガムレバ",
+  "カササギノ　ワタセルハシニ　オクシモノ",
+  "キミガタメ　オシカラザリシ　イノチサエ",
+  "ウカリケル　ヒトオハツセノ　ヤマオロシヨ",
+  "アマツカゼ　クモノカヨイジ　フキトジヨ",
+  "メグリアイテ　ミシヤソレトモ　ワカヌマニ",
+  "ワタノハラ　コギイデテミレバ　ヒサカタノ",
+  "ミチノクノ　シノブモジズリ　タレユエニ",
+  "イニシエノ　ナラノミヤコノ　ヤエザクラ",
+  "キリギリス　ナクヤシモヨノ　サムシロニ",
+  "コノタビワ　ヌサモトリアエズ　タムケヤマ",
+  "ヨオコメテ　トリノソラネワ　ハカルトモ",
+  "モモシキヤ　フルキノキバノ　シノブニモ",
+  "チギリオキシ　サセモガツユオ　イノチニテ",
+  "オモイワビ　サテモイノチワ　アルモノオ",
+]
+
+
+desc "blue data text to json"
+task :blue_category do
+  category_out(BLUE_PREFIXES, "../hya_01_blue.json")
+end
+
