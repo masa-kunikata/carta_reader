@@ -51,7 +51,7 @@ def category_out(prefixes, out_path)
     
     m = LINE_REGEX.match(line)
     
-    next if prefixes.include?(m['kamikana'])
+    next unless prefixes.include?(m['kamikana'])
     
     json_data << {
       text: "#{m['kami']}　　　#{m['shimo']}",

@@ -13,5 +13,6 @@ Carta game "reader" for Niko
 |Niko Carta | [7 sec](https://masa-kunikata.github.io/carta_reader/?data=nikocarta&sec=7) | [click](https://masa-kunikata.github.io/carta_reader/?data=nikocarta) | [7 sec](https://masa-kunikata.github.io/carta_reader/vue.html?data=nikocarta&sec=7) | [click](https://masa-kunikata.github.io/carta_reader/vue.html?data=nikocarta) |
 |Chizukigo | [7 sec](https://masa-kunikata.github.io/carta_reader/?data=chizukigo&sec=7) | [click](https://masa-kunikata.github.io/carta_reader/?data=chizukigo) | [7 sec](https://masa-kunikata.github.io/carta_reader/vue.html?data=chizukigo&sec=7) | [click](https://masa-kunikata.github.io/carta_reader/vue.html?data=chizukigo) |
 |3nen Kanji | [7 sec](https://masa-kunikata.github.io/carta_reader/?data=3nenkanji&sec=7) | [click](https://masa-kunikata.github.io/carta_reader/?data=3nenkanji) | [7 sec](https://masa-kunikata.github.io/carta_reader/vue.html?data=3nenkanji&sec=7) | [click](https://masa-kunikata.github.io/carta_reader/vue.html?data=3nenkanji) |
+|hya_01_blue | [20 sec](https://masa-kunikata.github.io/carta_reader/?data=hya_01_blue&sec=20) | [click](https://masa-kunikata.github.io/carta_reader/?data=hya_01_blue) | [20 sec](https://masa-kunikata.github.io/carta_reader/vue.html?data=hya_01_blue&sec=20) | [click](https://masa-kunikata.github.io/carta_reader/vue.html?data=hya_01_blue) |
 
 
