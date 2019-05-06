@@ -56,7 +56,6 @@ def category_out(prefixes, out_path)
     json_data << {
       text: "#{m['kami']}　　　#{m['shimo']}",
       read: "#{m['kamikana']}、、、#{m['shimokana']}",
-      rate: 0.5,
     }
   end
   

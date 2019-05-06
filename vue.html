@@ -23,9 +23,16 @@
   <body>
     <div id="app">
       <div id="menu" v-cloak>
-        <input type="range" min="0" max="10" v-model="sec">
+        <input type="range" min="0" max="20" v-model="sec">
         <span>{{sec}} 秒</span>
         <button :disabled="!done" @click="reloadPage">もう一回</button>
+        |
+        <input type="range" min="0.1" max="10.0" step="0.1" v-model="speech_rate">
+        <span>読む速さ {{speech_rate}}</span>
+        |
+        <input type="range" min="0.1" max="2.0" step="0.1" v-model="speech_rate">
+        <span>声の高さ {{speech_rate}}</span>
+        
       <div>
       <hr/>
       <div v-cloak id="content" @click="nextCard" @keydown="nextCard">
@@ -44,6 +51,8 @@
           currentContent: '',
           cards: [],
           sec: -1,
+          speech_rate: 1.0,   // speed 0.0 - 10.0
+          speech_pitch: 1.0,  // pitch 0.0 - 2.0
         },
         //
         computed: {
@@ -134,9 +143,9 @@
             
             try {
               const utterance = new SpeechSynthesisUtterance(item.read)
-              if (item.rate) {
-                utterance.rate = item.rate
-              }
+              utterance.rate = this.speech_rate
+              utterance.pitch = this.speech_pitch
+
               speechSynthesis.speak(utterance)
             } catch(e) {
               console.log(e)
