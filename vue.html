@@ -25,14 +25,14 @@
       <div id="menu" v-cloak>
         <input type="range" min="0" max="20" v-model="sec">
         <span>{{sec}} 秒</span>
-        <button :disabled="!done" @click="reloadPage">もう一回</button>
         |
         <input type="range" min="0.1" max="10.0" step="0.1" v-model="speech_rate">
         <span>読む速さ {{speech_rate}}</span>
         |
         <input type="range" min="0.1" max="2.0" step="0.1" v-model="speech_pitch">
-        <span>声の高さ {{speech_rate}}</span>
-        
+        <span>声の高さ {{speech_pitch}}</span>
+        |
+        <button :disabled="!done" @click="reloadPage">もう一回</button>
       <div>
       <hr/>
       <div v-cloak id="content" @click="nextCard" @keydown="nextCard">
