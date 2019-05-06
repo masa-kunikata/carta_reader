@@ -133,7 +133,11 @@
             this.currentContent = (item.html || item.text)
             
             try {
-              speechSynthesis.speak(new SpeechSynthesisUtterance(item.read))
+              const utterance = new SpeechSynthesisUtterance(item.read)
+              if (item.rate) {
+                utterance.rate = item.rate
+              }
+              speechSynthesis.speak(utterance)
             } catch(e) {
               console.log(e)
             }
