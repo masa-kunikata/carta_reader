@@ -23,11 +23,12 @@
   <body>
     <div id="app">
       <div id="menu" v-cloak>
-        <input type="range" min="0" max="20" v-model="sec"><span>間隔 {{sec}} 秒</span>
+        <span>間隔 {{sec}} 秒</span><input type="range" min="0" max="20" v-model="sec">
         |
-        <input type="range" min="10" max="250" v-model="speed"><span>読む速さ {{speed}} %</span>
+        <span>読む速さ {{speed}} %</span><input type="range" min="10" max="250" v-model="speed">
         |
         <button :disabled="!done" @click="reloadPage">もう一回</button>
+        <span>{{currentState}}</span>
       <div>
       <hr/>
       <div v-cloak id="content" @click="nextCard" @keydown="nextCard">
@@ -44,6 +45,7 @@
         //
         data: {
           currentContent: '',
+          origCards: [],
           cards: [],
           sec: 0,
           speed: 100,
@@ -55,6 +57,13 @@
           },
           autoMode () {
             return (0 < this.sec)
+          },
+          currentState() {
+            if (this.origCards.length < 1) {
+              return ''
+            }
+            
+            return `${this.origCards.length - this.cards.length} / ${this.origCards.length}`
           }
         },
         //
@@ -72,6 +81,7 @@
           const jsonUrl = `https://raw.githubusercontent.com/masa-kunikata/carta_reader/master/data/${dataType}.json`
           axios.get(jsonUrl)
             .then((res) => {
+              this.origCards = JSON.parse(JSON.stringify(res.data))
               this.cards = res.data
             })
 
