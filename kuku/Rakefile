@@ -1,0 +1,160 @@
+require 'pp'
+require 'yaml'
+require 'json'
+
+READ_YAML = <<-EOS
+questions:
+  q1_1: いんいちが
+  q1_2: いんにが
+  q1_3: いんさんが
+  q1_4: いんしが
+  q1_5: いんごが
+  q1_6: いんろくが
+  q1_7: いんしちが
+  q1_8: いんはちが
+  q1_9: いんくが
+  q2_1: にいちが
+  q2_2: ににんが
+  q2_3: にさんが
+  q2_4: にしが
+  q2_5: にご
+  q2_6: にろく
+  q2_7: にしち
+  q2_8: にはち
+  q2_9: にく
+  q3_1: さんいちが
+  q3_2: さんにが
+  q3_3: さざんが
+  q3_4: さんし
+  q3_5: さんご
+  q3_6: さぶろく
+  q3_7: さんしち
+  q3_8: さんぱ
+  q3_9: さんく
+  q4_1: しいちが
+  q4_2: しにが
+  q4_3: しさん
+  q4_4: しし
+  q4_5: しご
+  q4_6: しろく
+  q4_7: ししち
+  q4_8: しは
+  q4_9: しく
+  q5_1: ごいちが
+  q5_2: ごに
+  q5_3: ごさん
+  q5_4: ごし
+  q5_5: ごご
+  q5_6: ごろく
+  q5_7: ごしち
+  q5_8: ごは
+  q5_9: ごっく
+  q6_1: ろくいちが
+  q6_2: ろくに
+  q6_3: ろくさん
+  q6_4: ろくし
+  q6_5: ろくご
+  q6_6: ろくろく
+  q6_7: ろくしち
+  q6_8: ろくは
+  q6_9: ろっく
+  q7_1: しちいちが
+  q7_2: しちに
+  q7_3: しちさん
+  q7_4: しちし
+  q7_5: しちご
+  q7_6: しちろく
+  q7_7: しちしち
+  q7_8: しちは
+  q7_9: しちく
+  q8_1: はちいちが
+  q8_2: はちに
+  q8_3: はっさん
+  q8_4: はちし
+  q8_5: はちご
+  q8_6: はちろく
+  q8_7: はちしち
+  q8_8: はっぱ
+  q8_9: はっく
+  q9_1: くいちが
+  q9_2: くに
+  q9_3: くさん
+  q9_4: くし
+  q9_5: くご
+  q9_6: くろく
+  q9_7: くしち
+  q9_8: くは
+  q9_9: くく
+answers:
+  a1: いち
+  a2: に
+  a3: さん
+  a4: し
+  a5: ご
+  a6: ろく
+  a7: しち
+  a8: はち
+  a9: く
+  a10: じゅう
+  a12: じゅうに
+  a14: じゅうし
+  a15: じゅうご
+  a16: じゅうろく
+  a18: じゅうはち
+  a20: にじゅう
+  a21: にじゅういち
+  a24: にじゅうし
+  a25: にじゅうご
+  a27: にじゅうしち
+  a28: にじゅうはち
+  a30: さんじゅう
+  a32: さんじゅうに
+  a35: さんじゅうご
+  a36: さんじゅうろく
+  a40: しじゅう
+  a42: しじゅうに
+  a45: しじゅうご
+  a48: しじゅうはち
+  a49: しじゅうく
+  a54: ごじゅうし
+  a56: ごじゅうろく
+  a63: ろくじゅうさん
+  a64: ろくじゅうし
+  a72: しちじゅうに
+  a81: はちじゅういち
+EOS
+
+task default: :default_task 
+
+desc "default task"
+task :default_task do
+
+  nums = (1..9).to_a
+  kuku_nums = nums.product(nums)
+
+  qas = kuku_nums.map{|a, b| {q: "q#{a}_#{b}", a: "a#{a * b}"}}
+  # qs = qas.map{|qa| qa[:q]}
+  # as = qas.map{|qa| qa[:a]}.uniq.sort
+
+  read = YAML.load(READ_YAML)
+
+  question_reads = read['questions']
+  answer_reads = read['answers']
+
+  grouped_kuku = qas.group_by{|qa| qa[:a]}
+    .map do |a, same_aqs|
+      q_map = same_aqs.map do |aq|
+        q = aq[:q]
+        
+        m = /q(?<a>.)_(?<b>.)/.match(q)
+        
+        [question_reads[q], "#{m['a']} × #{m['b']}"]
+      end.to_h
+    
+      [answer_reads[a], q_map]
+    end
+    .to_h
+
+  File.write("kuku.json", grouped_kuku.to_json)
+end
+
