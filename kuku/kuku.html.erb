@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="UTF-8">
+  <head>
+    <style>
+      #menu {
+        margin: 1px 0px;
+        font-size: 20px;
+      }
+      #content {
+        margin: 50px 0px;
+        font-size: 50px;
+        text-align: center;
+      }
+      [v-cloak] {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div id="menu" v-cloak>
+        <span>間隔 {{sec}} 秒</span><input type="range" min="0" max="20" v-model="sec">
+        |
+        <span>読む速さ {{speed}} %</span><input type="range" min="10" max="250" v-model="speed">
+        |
+        <label>
+          <input type="checkbox" v-model="readAnswer"> 答えを読み上げる
+        </label>
+      <div>
+      <hr/>
+      <div v-cloak id="content">
+        <h1 v-html="currentContent"></h1>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+      // 掛け算九九の答えと問題
+      const KUKU = <%= kuku_json %>
+      
+      new Vue({
+        el: '#app',
+        //
+        data: {
+          currentContent: '',
+          answers: [],
+          sec: 10,
+          speed: 100,
+          readAnswer: false,
+        },
+        //
+        computed: {
+          done () {
+            return (this.answers.length < 1)
+          },
+          speechRate(){
+            return (this.speed / 100.0)
+          }
+        },
+        //
+        created () {
+          const a = Object.keys(KUKU)
+          
+          // shuffle
+          for(let i = a.length - 1; i > 0; i--){
+            let r = Math.floor(Math.random() * (i + 1))
+            let tmp = a[i]
+            a[i] = a[r]
+            a[r] = tmp
+          }
+          
+          this.answers = a;
+        },
+        //
+        mounted () {
+          this.init()
+        },
+        //
+        methods: {
+          //
+          getRandomInt: (max) => {
+            return Math.floor(Math.random() * Math.floor(max))
+          },
+          //
+          nextQuestion (event) {
+            if (this.done) {
+              this.currentContent = '終わり'
+              return
+            }
+            // 答え
+            const ans = this.answers[0]
+            const quesMap = KUKU[ans]
+            
+            // 同じ答えの複数の問題からランダムに問題を選ぶ
+            const quesKeys = Object.keys(quesMap)
+            const quesRead = quesKeys[this.getRandomInt(quesKeys.length)]
+            
+            this.currentContent = quesMap[quesRead]
+            try {
+              // 問題を読む
+              const q = new SpeechSynthesisUtterance(quesRead)
+              q.rate = this.speechRate
+              speechSynthesis.speak(q)
+              
+              if (this.readAnswer) {
+                // ちょっと遅らせて答えを読む
+                setTimeout(
+                  () => {
+                    const a = new SpeechSynthesisUtterance(ans)
+                    a.rate = this.speechRate
+                    speechSynthesis.speak(a)
+                  },
+                  1000 * this.sec * 0.1
+                )
+              }
+            } catch(e) {
+              console.log(e)
+            }
+            // 出題済みの答えを削除
+            this.answers.splice(0, 1)
+            
+            setTimeout(
+              this.nextQuestion,
+              1000 * this.sec
+            )
+          },
+          //
+          init () {
+            // first time
+            setTimeout(
+              this.nextQuestion,
+              1000
+            )
+          },
+        },
+      })
+    </script>
+  </body>
+</html>
