@@ -35,8 +35,15 @@ task :out_html do
       [answer_reads[a], q_map]
     end
     .to_h
+    
+  answers = answer_reads
+    .map do |akey, ayomi|
+      answer = akey.sub("a", '').to_i
+      [ayomi, answer]
+    end.to_h
 
   kuku_json = grouped_kuku.to_json
+  answers_json = answers.to_json
 
   File.write("../kuku.html", KUKU_HTML_TEMPLATE.result(binding))
 end

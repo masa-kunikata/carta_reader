@@ -8,9 +8,9 @@
         font-size: 20px;
       }
       #content {
-        margin: 50px 0px;
+        margin: 50px 25% 10px;
         font-size: 50px;
-        text-align: center;
+        text-align: left;
       }
       [v-cloak] {
         display: none;
@@ -42,6 +42,7 @@
     <script>
       // 掛け算九九の答えと問題
       const KUKU = <%= kuku_json %>
+      const ANSWERS = <%= answers_json %>
       
       new Vue({
         el: '#app',
@@ -107,14 +108,25 @@
             const quesKeys = Object.keys(quesMap)
             const quesRead = quesKeys[this.getRandomInt(quesKeys.length)]
             
-            this.currentContent = quesMap[quesRead]
+            this.currentContent = `${quesMap[quesRead]} = `
             try {
               // 問題を読む
-              const readContent = `${quesRead}${this.readAnswer ? ans : ''}`
+              const q = new SpeechSynthesisUtterance(quesRead)
+              q.rate = this.speechRate
+              speechSynthesis.speak(q)
               
-              const u = new SpeechSynthesisUtterance(readContent)
-              u.rate = this.speechRate
-              speechSynthesis.speak(u)
+              if (this.readAnswer) {
+                // ちょっと遅らせて答えを読む
+                setTimeout(
+                  () => {
+                    this.currentContent = `${quesMap[quesRead]} = ${ANSWERS[ans]}`
+                    const a = new SpeechSynthesisUtterance(ans)
+                    a.rate = this.speechRate
+                    speechSynthesis.speak(a)
+                  },
+                  1000 * this.sec * 0.3
+                )
+              }
             } catch(e) {
               console.log(e)
             }
