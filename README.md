@@ -13,3 +13,4 @@ Carta game "reader" for Niko
 |Chizukigo | [7 sec](https://masa-kunikata.github.io/carta_reader/vue.html?data=chizukigo&sec=7) | [click](https://masa-kunikata.github.io/carta_reader/vue.html?data=chizukigo) |
 |3nen Kanji | [7 sec](https://masa-kunikata.github.io/carta_reader/vue.html?data=3nenkanji&sec=7) | [click](https://masa-kunikata.github.io/carta_reader/vue.html?data=3nenkanji) |
 |hya_01_blue | [15 sec](https://masa-kunikata.github.io/carta_reader/vue.html?data=hya_01_blue&sec=15&speed=70) | [click](https://masa-kunikata.github.io/carta_reader/vue.html?data=hya_01_blue) |
+|kuku | [10 sec](https://masa-kunikata.github.io/carta_reader/kuku.html) |  |
