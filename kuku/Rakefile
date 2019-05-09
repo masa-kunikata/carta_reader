@@ -136,7 +136,7 @@ task :default_task do
   # qs = qas.map{|qa| qa[:q]}
   # as = qas.map{|qa| qa[:a]}.uniq.sort
 
-  read = YAML.load(READ_YAML)
+  read = YAML.load_file('kuku_read.yml')
 
   question_reads = read['questions']
   answer_reads = read['answers']
@@ -158,3 +158,21 @@ task :default_task do
   File.write("kuku.json", grouped_kuku.to_json)
 end
 
+task :katakana do
+  
+  to_kana = ->(o)do
+    o.tr("あ-ん", "ア-ン").tr("がじゅっぱ", "ガジュッパ")
+  end
+
+  read = YAML.load(READ_YAML)
+
+  question_mod = read['questions'].map do |k, v|
+    [k, to_kana[v]]
+  end.to_h
+  
+  answer_mod = read['answers'].map do |k, v|
+    [k, to_kana[v]]
+  end.to_h
+  
+  File.write("kuku_read.yml", {'questions' => question_mod, 'answers' => answer_mod}.to_yaml)
+end
