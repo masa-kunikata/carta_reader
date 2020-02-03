@@ -1,0 +1,185 @@
+<template>
+<div>
+  <div id="menu" v-cloak>
+    <span>間隔 {{sec}} 秒</span><input type="range" min="0" max="20" v-model="sec">
+    |
+    <span>読む速さ {{speed}} %</span><input type="range" min="10" max="250" v-model="speed">
+    |
+    <button :disabled="!done" @click="reloadPage">もう一回</button>
+    <span>{{currentState}}</span>
+  </div>
+  <hr/>
+  <div v-cloak id="content" @click="nextCard" @keydown="nextCard">
+    <h1 v-html="currentContent"></h1>
+  </div>
+</div>
+</template>
+
+<script>
+export default {
+  name: 'CartaReader',
+  props: {
+    msg: String
+  },
+  //
+  data() {
+    return {
+      currentContent: '',
+      origCards: [],
+      cards: [],
+      sec: 0,
+      speed: 100,
+    }
+  },
+  //
+  computed: {
+    done () {
+      return (this.cards.length < 1)
+    },
+    autoMode () {
+      return (0 < this.sec)
+    },
+    currentState() {
+      if (this.origCards.length < 1) {
+        return ''
+      }
+      
+      return `${this.origCards.length - this.cards.length} / ${this.origCards.length}`
+    }
+  },
+  //
+  watch: {
+    autoMode (newVal, oldVal) {
+      if (oldVal === false && newVal === true) {
+        this.nextCard()
+      }
+    }
+  },
+  //
+  created () {
+    const dataType = (this.paramOf('data') || 'cities')
+    
+    const jsonUrl = `https://raw.githubusercontent.com/masa-kunikata/carta_reader/master/data/${dataType}.json`
+    this.$axios.get(jsonUrl)
+      .then((res) => {
+        this.origCards = JSON.parse(JSON.stringify(res.data))
+        this.cards = res.data
+      })
+
+    this.sec = parseInt((this.paramOf('sec') || '0'), 10)
+    this.speed = parseInt((this.paramOf('speed') || '100'), 10)
+  },
+  //
+  mounted () {
+    this.init()
+  },
+  //
+  methods: {
+    //
+    paramOf: (key) => {
+      const s = location.search
+      if (!s) return null
+      if (s === '') return null
+      const regex = new RegExp(key + "=([^&]+)")
+      
+      const m = s.match(regex)
+      if (m) {
+        return m[1]
+      }
+      return null
+    },
+    //
+    getRandomInt: (max) => {
+      return Math.floor(Math.random() * Math.floor(max))
+    },
+    //
+    nextTarget (num) {
+      if (num < 1) {
+        return null
+      }
+      return this.getRandomInt(num)
+    },
+    //
+    itemOf: (rec) => {
+      let item = rec
+      
+      if (typeof(rec) == "string") {
+        item = {
+          text: rec,
+          html: null,
+          read: rec,
+        }
+      }
+      if (!(item.read)) {
+        item.read = item.text
+      }
+      return item
+    },
+    //
+    nextCard () {
+      const index = this.nextTarget(this.cards.length)
+      
+      if (index === null) {
+        this.currentContent = '終わり'
+        return
+      }
+      const item = this.itemOf(this.cards[index])
+      
+      this.currentContent = (item.html || item.text)
+      
+      try {
+        const utterance = new SpeechSynthesisUtterance(item.read)
+        utterance.rate = (this.speed / 100.0)
+        // console.log(utterance.rate)
+
+        speechSynthesis.speak(utterance)
+      } catch(e) {
+        // console.log(e)
+      }
+      this.cards.splice(index, 1)
+      
+      if (this.autoMode) {
+        setTimeout(
+          this.nextCard,
+          1000 * this.sec
+        )
+      }
+    },
+    //
+    init () {
+      if (!this.autoMode) {
+        this.currentContent = 'クリック / なんかキー押す'
+        return
+      }
+      // first time
+      setTimeout(
+        this.nextCard,
+        1000
+      )
+    },
+    //
+    reloadPage () {
+      location.reload()
+    },
+  },
+}
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+  #menu {
+    margin: 1px 0px;
+    font-size: 20px;
+  }
+  #content {
+    margin: 50px 0px;
+    font-size: 50px;
+    text-align: center;
+  }
+  .kyocho {
+    color: red;
+  }
+  [v-cloak] {
+    display: none;
+  }
+</style>
