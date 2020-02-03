@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="UTF-8">
+  <head>
+    <style>
+      #menu {
+        margin: 1px 0px;
+        font-size: 20px;
+      }
+      #content {
+        margin: 50px 25% 10px;
+        font-size: 50px;
+        text-align: left;
+      }
+      [v-cloak] {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div id="menu" v-cloak>
+        <span>間隔 {{sec}} 秒</span><input type="range" min="1" max="20" v-model="sec">
+        |
+        <span>読む速さ {{speed}} %</span><input type="range" min="1" max="250" v-model="speed">
+        |
+        <label>
+          <input type="checkbox" v-model="readAnswer"> 答え言う
+        </label>
+        |
+        <button :disabled="!done" @click="reloadPage">もう一回</button>
+        <span>{{currentState}}</span>
+      <div>
+      <hr/>
+      <div v-cloak id="content">
+        <h1 v-html="currentContent"></h1>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script>
+      // 掛け算九九の答えと問題
+      const KUKU = <%= kuku_json %>
+      const ANSWERS = <%= answers_json %>
+      
+      new Vue({
+        el: '#app',
+        //
+        data: {
+          currentContent: '',
+          answers: [],
+          sec: 10,
+          speed: 100,
+          readAnswer: false,
+        },
+        //
+        computed: {
+          done () {
+            return (this.answers.length < 1)
+          },
+          speechRate(){
+            return (this.speed / 100.0)
+          },
+          currentState() {
+            if (this.done) return ''
+
+            const origSize = Object.keys(KUKU).length
+            return `${origSize - this.answers.length} / ${origSize}`
+          }
+        },
+        //
+        created () {
+          this.answers = this.shuffleArray(Object.keys(KUKU));
+          this.sec = parseInt((this.paramOf('sec') || '10'), 10)
+          this.speed = parseInt((this.paramOf('speed') || '100'), 10)
+          this.readAnswer = (this.paramOf('readAnswer') === 'true')
+        },
+        //
+        mounted () {
+          this.init()
+        },
+        //
+        methods: {
+          //
+          init () {
+            // first time
+            setTimeout(
+              this.nextItem,
+              1000
+            )
+          },
+          //
+          nextItem (event) {
+            if (this.done) {
+              this.currentContent = '終わり'
+              return
+            }
+            // 答え
+            const ans = this.answers[0]
+            const quesMap = KUKU[ans]
+            
+            // 同じ答えの複数の問題からランダムに問題を選ぶ
+            const quesKeys = Object.keys(quesMap)
+            const quesRead = quesKeys[this.getRandomInt(quesKeys.length)]
+            
+            // 問題を表示して、読む
+            this.currentContent = `${quesMap[quesRead]} = `
+            this.speak(quesRead)
+            
+            if (this.readAnswer) {
+              // ちょっと遅らせて答えを表示して、読む
+              setTimeout(
+                () => {
+                  this.currentContent = `${quesMap[quesRead]} = ${ANSWERS[ans]}`
+                  this.speak(ans)
+                },
+                1000 * this.sec * 0.3
+              )
+            }
+            // 出題済みの答えを削除
+            this.answers.splice(0, 1)
+            
+            setTimeout(
+              this.nextItem,
+              1000 * this.sec
+            )
+          },
+          //
+          reloadPage () {
+            location.reload()
+          },
+          //
+          speak (content) {
+            try {
+              const u = new SpeechSynthesisUtterance(content)
+              u.rate = this.speechRate
+              speechSynthesis.speak(u)
+            } catch(e) {
+              console.log(e)
+            }
+          },
+          //
+          paramOf: (key) => {
+            const s = location.search
+            if (!s) return null
+            if (s === '') return null
+            const regex = new RegExp(key + "=([^&]+)")
+            
+            const m = s.match(regex)
+            if (m) {
+              return m[1]
+            }
+            return null
+          },
+          //
+          shuffleArray: (origArray) => {
+            const a = JSON.parse(JSON.stringify(origArray))
+            for(let i = a.length - 1; i > 0; i--){
+              let r = Math.floor(Math.random() * (i + 1))
+              let tmp = a[i]
+              a[i] = a[r]
+              a[r] = tmp
+            }
+            return a
+          },
+          //
+          getRandomInt: (max) => {
+            return Math.floor(Math.random() * Math.floor(max))
+          },
+        },
+      })
+    </script>
+  </body>
+</html>

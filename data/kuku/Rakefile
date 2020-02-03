@@ -1,0 +1,49 @@
+require 'pp'
+require 'yaml'
+require 'json'
+require 'erb'
+
+task default: :out_html 
+
+READ_YML = YAML.load_file(File.join(__dir__, 'kuku_read.yml'))
+
+KUKU_HTML_TEMPLATE = ERB.new(
+  File.read(File.join(__dir__, 'kuku.html.erb'), encoding: Encoding::UTF_8)
+)
+
+desc "out_html"
+task :out_html do
+
+  nums = (1..9).to_a
+  kuku_nums = nums.product(nums)
+
+  qas = kuku_nums.map{|a, b| {q: "q#{a}_#{b}", a: "a#{a * b}"}}
+
+  question_reads = READ_YML['questions']
+  answer_reads = READ_YML['answers']
+
+  grouped_kuku = qas.group_by{|qa| qa[:a]}
+    .map do |a, same_aqs|
+      q_map = same_aqs.map do |aq|
+        q = aq[:q]
+        
+        m = /q(?<a>.)_(?<b>.)/.match(q)
+        
+        [question_reads[q], "#{m['a']} × #{m['b']}"]
+      end.to_h
+    
+      [answer_reads[a], q_map]
+    end
+    .to_h
+    
+  answers = answer_reads
+    .map do |akey, ayomi|
+      answer = akey.sub("a", '').to_i
+      [ayomi, answer]
+    end.to_h
+
+  kuku_json = grouped_kuku.to_json
+  answers_json = answers.to_json
+
+  File.write("../kuku.html", KUKU_HTML_TEMPLATE.result(binding))
+end

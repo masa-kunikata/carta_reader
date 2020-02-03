@@ -1,0 +1,18 @@
+require 'json'
+
+task default: :data_text_to_json
+
+
+OUT_JSON = '../edo_iroha.json'
+
+INPUT_FILE = './edo_iroha.txt'
+
+desc "data text to json"
+task :data_text_to_json do
+  
+  contents = File.read(INPUT_FILE, encoding: Encoding::CP932)
+  
+  File.write(OUT_JSON, contents.each_line.to_a.map{|line| line.chomp('')}, encoding: Encoding::UTF_8)
+  
+end
+

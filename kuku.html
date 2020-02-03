@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="UTF-8">
+  <head>
+    <style>
+      #menu {
+        margin: 1px 0px;
+        font-size: 20px;
+      }
+      #content {
+        margin: 50px 25% 10px;
+        font-size: 50px;
+        text-align: left;
+      }
+      [v-cloak] {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div id="menu" v-cloak>
+        <span>間隔 {{sec}} 秒</span><input type="range" min="1" max="20" v-model="sec">
+        |
+        <span>読む速さ {{speed}} %</span><input type="range" min="1" max="250" v-model="speed">
+        |
+        <label>
+          <input type="checkbox" v-model="readAnswer"> 答え言う
+        </label>
+        |
+        <button :disabled="!done" @click="reloadPage">もう一回</button>
+        <span>{{currentState}}</span>
+      <div>
+      <hr/>
+      <div v-cloak id="content">
+        <h1 v-html="currentContent"></h1>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script>
+      // 掛け算九九の答えと問題
+      const KUKU = {"イチ":{"インイチガ":"1 × 1"},"ニ":{"インニガ":"1 × 2","ニイチガ":"2 × 1"},"サン":{"インサンガ":"1 × 3","サンイチガ":"3 × 1"},"シ":{"インシガ":"1 × 4","ニニンガ":"2 × 2","シイチガ":"4 × 1"},"ゴ":{"インゴガ":"1 × 5","ゴイチガ":"5 × 1"},"ロク":{"インロクガ":"1 × 6","ニサンガ":"2 × 3","サンニガ":"3 × 2","ロクイチガ":"6 × 1"},"シチ":{"インシチガ":"1 × 7","シチイチガ":"7 × 1"},"ハチ":{"インハチガ":"1 × 8","ニシガ":"2 × 4","シニガ":"4 × 2","ハチイチガ":"8 × 1"},"ク":{"インクガ":"1 × 9","サザンガ":"3 × 3","クイチガ":"9 × 1"},"ジュウ":{"ニゴ":"2 × 5","ゴニ":"5 × 2"},"ジュウニ":{"ニロク":"2 × 6","サンシ":"3 × 4","シサン":"4 × 3","ロクニ":"6 × 2"},"ジュウシ":{"ニシチ":"2 × 7","シチニ":"7 × 2"},"ジュウロク":{"ニハチ":"2 × 8","シシ":"4 × 4","ハチニ":"8 × 2"},"ジュウハチ":{"ニク":"2 × 9","サブロク":"3 × 6","ロクサン":"6 × 3","クニ":"9 × 2"},"ジュウゴ":{"サンゴ":"3 × 5","ゴサン":"5 × 3"},"ニジュウイチ":{"サンシチ":"3 × 7","シチサン":"7 × 3"},"ニジュウシ":{"サンパ":"3 × 8","シロク":"4 × 6","ロクシ":"6 × 4","ハッサン":"8 × 3"},"ニジュウシチ":{"サンク":"3 × 9","クサン":"9 × 3"},"ニジュウ":{"シゴ":"4 × 5","ゴシ":"5 × 4"},"ニジュウハチ":{"シシチ":"4 × 7","シチシ":"7 × 4"},"サンジュウニ":{"シハ":"4 × 8","ハチシ":"8 × 4"},"サンジュウロク":{"シク":"4 × 9","ロクロク":"6 × 6","クシ":"9 × 4"},"ニジュウゴ":{"ゴゴ":"5 × 5"},"サンジュウ":{"ゴロク":"5 × 6","ロクゴ":"6 × 5"},"サンジュウゴ":{"ゴシチ":"5 × 7","シチゴ":"7 × 5"},"シジュウ":{"ゴハ":"5 × 8","ハチゴ":"8 × 5"},"シジュウゴ":{"ゴック":"5 × 9","クゴ":"9 × 5"},"シジュウニ":{"ロクシチ":"6 × 7","シチロク":"7 × 6"},"シジュウハチ":{"ロクハ":"6 × 8","ハチロク":"8 × 6"},"ゴジュウシ":{"ロック":"6 × 9","クロク":"9 × 6"},"シジュウク":{"シチシチ":"7 × 7"},"ゴジュウロク":{"シチハ":"7 × 8","ハチシチ":"8 × 7"},"ロクジュウサン":{"シチク":"7 × 9","クシチ":"9 × 7"},"ロクジュウシ":{"ハッパ":"8 × 8"},"シチジュウニ":{"ハック":"8 × 9","クハ":"9 × 8"},"ハチジュウイチ":{"クク":"9 × 9"}}
+      const ANSWERS = {"イチ":1,"ニ":2,"サン":3,"シ":4,"ゴ":5,"ロク":6,"シチ":7,"ハチ":8,"ク":9,"ジュウ":10,"ジュウニ":12,"ジュウシ":14,"ジュウゴ":15,"ジュウロク":16,"ジュウハチ":18,"ニジュウ":20,"ニジュウイチ":21,"ニジュウシ":24,"ニジュウゴ":25,"ニジュウシチ":27,"ニジュウハチ":28,"サンジュウ":30,"サンジュウニ":32,"サンジュウゴ":35,"サンジュウロク":36,"シジュウ":40,"シジュウニ":42,"シジュウゴ":45,"シジュウハチ":48,"シジュウク":49,"ゴジュウシ":54,"ゴジュウロク":56,"ロクジュウサン":63,"ロクジュウシ":64,"シチジュウニ":72,"ハチジュウイチ":81}
+      
+      new Vue({
+        el: '#app',
+        //
+        data: {
+          currentContent: '',
+          answers: [],
+          sec: 10,
+          speed: 100,
+          readAnswer: false,
+        },
+        //
+        computed: {
+          done () {
+            return (this.answers.length < 1)
+          },
+          speechRate(){
+            return (this.speed / 100.0)
+          },
+          currentState() {
+            if (this.done) return ''
+
+            const origSize = Object.keys(KUKU).length
+            return `${origSize - this.answers.length} / ${origSize}`
+          }
+        },
+        //
+        created () {
+          this.answers = this.shuffleArray(Object.keys(KUKU));
+          this.sec = parseInt((this.paramOf('sec') || '10'), 10)
+          this.speed = parseInt((this.paramOf('speed') || '100'), 10)
+          this.readAnswer = (this.paramOf('readAnswer') === 'true')
+        },
+        //
+        mounted () {
+          this.init()
+        },
+        //
+        methods: {
+          //
+          init () {
+            // first time
+            setTimeout(
+              this.nextItem,
+              1000
+            )
+          },
+          //
+          nextItem (event) {
+            if (this.done) {
+              this.currentContent = '終わり'
+              return
+            }
+            // 答え
+            const ans = this.answers[0]
+            const quesMap = KUKU[ans]
+            
+            // 同じ答えの複数の問題からランダムに問題を選ぶ
+            const quesKeys = Object.keys(quesMap)
+            const quesRead = quesKeys[this.getRandomInt(quesKeys.length)]
+            
+            // 問題を表示して、読む
+            this.currentContent = `${quesMap[quesRead]} = `
+            this.speak(quesRead)
+            
+            if (this.readAnswer) {
+              // ちょっと遅らせて答えを表示して、読む
+              setTimeout(
+                () => {
+                  this.currentContent = `${quesMap[quesRead]} = ${ANSWERS[ans]}`
+                  this.speak(ans)
+                },
+                1000 * this.sec * 0.3
+              )
+            }
+            // 出題済みの答えを削除
+            this.answers.splice(0, 1)
+            
+            setTimeout(
+              this.nextItem,
+              1000 * this.sec
+            )
+          },
+          //
+          reloadPage () {
+            location.reload()
+          },
+          //
+          speak (content) {
+            try {
+              const u = new SpeechSynthesisUtterance(content)
+              u.rate = this.speechRate
+              speechSynthesis.speak(u)
+            } catch(e) {
+              console.log(e)
+            }
+          },
+          //
+          paramOf: (key) => {
+            const s = location.search
+            if (!s) return null
+            if (s === '') return null
+            const regex = new RegExp(key + "=([^&]+)")
+            
+            const m = s.match(regex)
+            if (m) {
+              return m[1]
+            }
+            return null
+          },
+          //
+          shuffleArray: (origArray) => {
+            const a = JSON.parse(JSON.stringify(origArray))
+            for(let i = a.length - 1; i > 0; i--){
+              let r = Math.floor(Math.random() * (i + 1))
+              let tmp = a[i]
+              a[i] = a[r]
+              a[r] = tmp
+            }
+            return a
+          },
+          //
+          getRandomInt: (max) => {
+            return Math.floor(Math.random() * Math.floor(max))
+          },
+        },
+      })
+    </script>
+  </body>
+</html>
